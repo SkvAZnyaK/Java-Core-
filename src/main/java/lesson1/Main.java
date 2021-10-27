@@ -18,7 +18,7 @@ public class Main {
 
 
 
-// Первый вариант кода
+// Первый вариант кода, просматривал код, вычищал лишнее
        // Cat catCompetitor1 = new Cat("Морис", "Черный", 10, 1, 5, 3, false);
        // Wolf wolfCompetitor1 = new Wolf("Василий", "серый", 12, 3, 5, 1, false);
         //Turtle turtleCompetitor1 = new Turtle("Тартила", "зеленая", 100, 5, 1, 1, true);
