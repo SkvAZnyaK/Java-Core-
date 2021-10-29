@@ -9,5 +9,6 @@ public class Main2 {
         phoneBook1.add("Гагарин", 6355657);
         phoneBook1.add("Полетаев", 5895455);
         phoneBook1.get("Карпухин");
+        //System.out.println(phoneBook1);
     }
 }
