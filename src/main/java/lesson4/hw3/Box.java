@@ -17,10 +17,12 @@ public class Box<T extends Fruit> {
     }
 
     public void addFruit(T fruit) {
+
         fruitList.add(fruit);
     }
 
     public float getWeight() {
+
         return fruitList.size() * fruitList.get(0).getWeight();
     }
 
