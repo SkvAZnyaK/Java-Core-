@@ -1,7 +1,6 @@
 package lesson7.project;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lesson7.project.entity.Weather;
 import okhttp3.HttpUrl;
@@ -10,6 +9,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 public class AccuweatherModel implements WeatherModel {
@@ -34,10 +34,9 @@ public class AccuweatherModel implements WeatherModel {
 
     private static final OkHttpClient okHttpClient = new OkHttpClient();
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final DataBaseRepository dataBaseRepository = new DataBaseRepository();
 
-    private DataBaseRepository dataBaseRepository = new DataBaseRepository();
-
-    public void getWeather(String selectedCity, Period period) throws IOException {
+    public void getWeather(String selectedCity, Period period) throws IOException, SQLException {
         switch (period) {
             case NOW:
                 HttpUrl httpUrl = new HttpUrl.Builder()
@@ -60,8 +59,6 @@ public class AccuweatherModel implements WeatherModel {
                 Response oneDayForecastResponse = okHttpClient.newCall(request).execute();
                 String weatherResponse = oneDayForecastResponse.body().string();
                 weatherResponseOne(weatherResponse);
-
-                //dataBaseRepository.saveWeatherToDataBase(new Weather()) - тут после парсинга добавляем данные в БД
                 break;
             case FIVE_DAYS:
                 HttpUrl httpUrl5 = new HttpUrl.Builder()
@@ -133,148 +130,76 @@ public class AccuweatherModel implements WeatherModel {
         }
     }
 
-    //http://dataservice.accuweather.com/locations/v1/295212?apikey=IJBBWkRUFc5GZt0gOhpm1BjG6k2VUDfu&language=ru
+    public void weatherResponseOne(String response) throws JsonProcessingException, SQLException {
+        String dayCast = objectMapper.readTree(response).at("/DailyForecasts").get(0).at("/Day").at("/IconPhrase").asText();
+        String nightCast = objectMapper.readTree(response).at("/DailyForecasts").get(0).at("/Night").at("/IconPhrase").asText();
+        String date = objectMapper.readTree(response).at("/DailyForecasts").get(0).at("/Date").asText();
+        String minTemp = objectMapper.readTree(response).at("/DailyForecasts").get(0).at("/Temperature").at("/Minimum").at("/Value").asText();
+        String maxTemp = objectMapper.readTree(response).at("/DailyForecasts").get(0).at("/Temperature").at("/Maximum").at("/Value").asText();
+        String tempUnit = objectMapper.readTree(response).at("/DailyForecasts").get(0).at("/Temperature").at("/Minimum").at("/Unit").asText();
 
+        System.out.println(date + " в городе " + UserInterfaceView.city + ", днем ожидается: " + dayCast + ", ночью ожидается: " + nightCast +
+                ". Температура: от " + minTemp + tempUnit + " до " + maxTemp + tempUnit + ".");
 
-    public void weatherResponseOne(String response) throws JsonProcessingException {
-        JsonNode dayCast = objectMapper
-                .readTree(response)
-                .at("/DailyForecasts/Day/IconPhrase");
-        JsonNode nightCast = objectMapper
-                .readTree(response)
-                .at("/DailyForecasts/Night/IconPhrase");
-        JsonNode date = objectMapper
-                .readTree(response)
-                .at("/DailyForecasts/Date");
-        JsonNode minTemp = objectMapper
-                .readTree(response)
-                .at("/DailyForecasts/Temperature/Minimum/Value");
-        JsonNode maxTemp = objectMapper
-                .readTree(response)
-                .at("/DailyForecasts/Temperature/Maximum/Value");
-        JsonNode tempUnit = objectMapper
-                .readTree(response)
-                .at("/DailyForecasts/Temperature/Minimum/Unit");
-        System.out.println(date + "в городе " + UserInterfaceView.city + " днем ожидается " + dayCast + ", ночью ожидается " + nightCast +
-                ", температура: от " + minTemp + tempUnit + " до " + maxTemp + tempUnit + ".");
+        dataBaseRepository.saveWeatherToDataBase(new Weather(UserInterfaceView.city, dayCast, nightCast, date, Double.parseDouble(minTemp),
+                Double.parseDouble(maxTemp), tempUnit));
     }
 
-        public void weatherResponseFive(String response5) throws JsonProcessingException {
-//            JsonNode firstDayCast = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Day/IconPhrase");
-//            JsonNode firstNightCast = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Night/IconPhrase");
-//            JsonNode firstDayDate = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Date");
-//            JsonNode firstDayMinTemp = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Temperature/Minimum/Value");
-//            JsonNode firstDayMaxTemp = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Temperature/Maximum/Value");
-//            JsonNode tempUnit = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Temperature/Minimum/Unit");
-//
-//            JsonNode secondDayCast = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Day/IconPhrase");
-//            JsonNode secondNightCast = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Night/IconPhrase");
-//            JsonNode secondDayDate = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Date");
-//            JsonNode secondDayMinTemp = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Temperature/Minimum/Value");
-//            JsonNode secondDayMaxTemp = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Temperature/Maximum/Value");
-//
-//            JsonNode thirdDayCast = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Day/IconPhrase");
-//            JsonNode thirdNightCast = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Night/IconPhrase");
-//            JsonNode thirdDayDate = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Date");
-//            JsonNode thirdDayMinTemp = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Temperature/Minimum/Value");
-//            JsonNode thirdDayMaxTemp = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Temperature/Maximum/Value");
-//
-//            JsonNode fourthDayCast = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Day/IconPhrase");
-//            JsonNode fourthNightCast = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Night/IconPhrase");
-//            JsonNode fourthDayDate = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Date");
-//            JsonNode fourthDayMinTemp = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Temperature/Minimum/Value");
-//            JsonNode fourthDayMaxTemp = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Temperature/Maximum/Value");
-//
-//            JsonNode fifthDayCast = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Day/IconPhrase");
-//            JsonNode fifthNightCast = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Night/IconPhrase");
-//            JsonNode fifthDayDate = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Date");
-//            JsonNode fifthDayMinTemp = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Temperature/Minimum/Value");
-//            JsonNode fifthDayMaxTemp = objectMapper
-//                    .readTree(response5)
-//                    .at("/DailyForecasts/Temperature/Maximum/Value");
-//
-//            System.out.println("Прогноз на 5 дней для города: " + UserInterfaceView.city + ".");
-//            System.out.println(firstDayDate + " днем ожидается " + firstDayCast + ", ночью ожидается " + firstNightCast +
-//                    ", температура: от " + firstDayMinTemp + tempUnit + ", до " + firstDayMaxTemp + tempUnit + ".");
-//            System.out.println(secondDayDate + " днем ожидается " + secondDayCast + ", ночью ожидается " + secondNightCast +
-//                    ", температура: от " + secondDayMinTemp + tempUnit + ", до " + secondDayMaxTemp + tempUnit + ".");
-//            System.out.println(thirdDayDate + " днем ожидается " + thirdDayCast + ", ночью ожидается " + thirdNightCast +
-//                    ", температура: от " + thirdDayMinTemp + tempUnit + ", до " + thirdDayMaxTemp + tempUnit + ".");
-//            System.out.println(fourthDayDate + " днем ожидается " + fourthDayCast + ", ночью ожидается " + fourthNightCast +
-//                    ", температура: от " + fourthDayMinTemp + tempUnit + ", до " + fourthDayMaxTemp + tempUnit + ".");
-//            System.out.println(fifthDayDate + " днем ожидается " + fifthDayCast + ", ночью ожидается " + fifthNightCast +
-//                    ", температура: от " + fifthDayMinTemp + tempUnit + ", до " + fifthDayMaxTemp + tempUnit + ".");
+        public void weatherResponseFive(String response5) throws JsonProcessingException, SQLException {
+            System.out.println("Прогноз на 5 дней для города: " + UserInterfaceView.city + ".");
+            for (int i = 0 ; i <= 4 ; i++){
+                String dayCast = objectMapper.readTree(response5).at("/DailyForecasts").get(i).at("/Day").at("/IconPhrase").asText();
+                String nightCast = objectMapper.readTree(response5).at("/DailyForecasts").get(i).at("/Night").at("/IconPhrase").asText();
+                String dayDate = objectMapper.readTree(response5).at("/DailyForecasts").get(i).at("/Date").asText();
+                String dayMinTemp = objectMapper.readTree(response5).at("/DailyForecasts").get(i).at("/Temperature").at("/Minimum").at("/Value").asText();
+                String dayMaxTemp = objectMapper.readTree(response5).at("/DailyForecasts").get(i).at("/Temperature").at("/Maximum").at("/Value").asText();
+                String tempUnit = objectMapper.readTree(response5).at("/DailyForecasts").get(i).at("/Temperature").at("/Minimum").at("/Unit").asText();
 
+                System.out.println(dayDate + " днем ожидается " + dayCast + ", ночью ожидается " + nightCast +
+                        ", температура: от " + dayMinTemp + tempUnit + ", до " + dayMaxTemp + tempUnit + ".");
 
-            System.out.println("Метод еще не реализован");
+                dataBaseRepository.saveWeatherToDataBase(new Weather(UserInterfaceView.city, dayCast, nightCast, dayDate, Double.parseDouble(dayMinTemp),
+                        Double.parseDouble(dayMaxTemp), tempUnit));
+            }
         }
 
-        public void weatherResponseTen(String response10){
-            System.out.println("Метод еще не реализован");
+        public void weatherResponseTen(String response10) throws JsonProcessingException, SQLException {
+            System.out.println("Прогноз на 10 дней для города: " + UserInterfaceView.city + ".");
+            for (int i = 0 ; i <= 9 ; i++){
+                String dayCast = objectMapper.readTree(response10).at("/DailyForecasts").get(i).at("/Day").at("/IconPhrase").asText();
+                String nightCast = objectMapper.readTree(response10).at("/DailyForecasts").get(i).at("/Night").at("/IconPhrase").asText();
+                String dayDate = objectMapper.readTree(response10).at("/DailyForecasts").get(i).at("/Date").asText();
+                String dayMinTemp = objectMapper.readTree(response10).at("/DailyForecasts").get(i).at("/Temperature").at("/Minimum").at("/Value").asText();
+                String dayMaxTemp = objectMapper.readTree(response10).at("/DailyForecasts").get(i).at("/Temperature").at("/Maximum").at("/Value").asText();
+                String tempUnit = objectMapper.readTree(response10).at("/DailyForecasts").get(i).at("/Temperature").at("/Minimum").at("/Unit").asText();
+
+                System.out.println(dayDate + " днем ожидается " + dayCast + ", ночью ожидается " + nightCast +
+                        ", температура: от " + dayMinTemp + tempUnit + ", до " + dayMaxTemp + tempUnit + ".");
+
+                dataBaseRepository.saveWeatherToDataBase(new Weather(UserInterfaceView.city, dayCast, nightCast, dayDate, Double.parseDouble(dayMinTemp),
+                        Double.parseDouble(dayMaxTemp), tempUnit));
+            }
         }
 
-        public void weatherResponseFifteen(String response15){
-            System.out.println("Метод еще не реализован");
+        public void weatherResponseFifteen(String response15) throws JsonProcessingException, SQLException {
+            System.out.println("Прогноз на 15 дней для города: " + UserInterfaceView.city + ".");
+            for (int i = 0 ; i <= 14 ; i++){
+                String dayCast = objectMapper.readTree(response15).at("/DailyForecasts").get(i).at("/Day").at("/IconPhrase").asText();
+                String nightCast = objectMapper.readTree(response15).at("/DailyForecasts").get(i).at("/Night").at("/IconPhrase").asText();
+                String dayDate = objectMapper.readTree(response15).at("/DailyForecasts").get(i).at("/Date").asText();
+                String dayMinTemp = objectMapper.readTree(response15).at("/DailyForecasts").get(i).at("/Temperature").at("/Minimum").at("/Value").asText();
+                String dayMaxTemp = objectMapper.readTree(response15).at("/DailyForecasts").get(i).at("/Temperature").at("/Maximum").at("/Value").asText();
+                String tempUnit = objectMapper.readTree(response15).at("/DailyForecasts").get(i).at("/Temperature").at("/Minimum").at("/Unit").asText();
+
+                System.out.println(dayDate + " днем ожидается " + dayCast + ", ночью ожидается " + nightCast +
+                        ", температура: от " + dayMinTemp + tempUnit + ", до " + dayMaxTemp + tempUnit + ".");
+
+                dataBaseRepository.saveWeatherToDataBase(new Weather(UserInterfaceView.city, dayCast, nightCast, dayDate, Double.parseDouble(dayMinTemp),
+                        Double.parseDouble(dayMaxTemp), tempUnit));
+            }
         }
-
-
-    @Override
-    public List<Weather> getSavedToDBWeather() {
-        return dataBaseRepository.getSavedToDBWeather();
-    }
 
     private String detectCityKey(String selectCity) throws IOException {
-        //http://dataservice.accuweather.com/locations/v1/cities/autocomplete
         HttpUrl httpUrlCity = new HttpUrl.Builder()
                 .scheme(PROTOKOL)
                 .host(BASE_HOST)
@@ -298,251 +223,10 @@ public class AccuweatherModel implements WeatherModel {
         String cityKey = objectMapper.readTree(responseString).get(0).at("/Key").asText();
         return cityKey;
     }
-    //Responce от акку прогноз на 1 день
-    //{
-    //  "Headline": {
-    //    "EffectiveDate": "2021-11-05T01:00:00+03:00",
-    //    "EffectiveEpochDate": 1636063200,
-    //    "Severity": 3,
-    //    "Text": "Четверг, поздняя ночь - Пятница, поздняя ночь: ожидается ливень",
-    //    "Category": "rain",
-    //    "EndDate": "2021-11-06T07:00:00+03:00",
-    //    "EndEpochDate": 1636171200,
-    //    "MobileLink": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?unit=c",
-    //    "Link": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?unit=c"
-    //  },
-    //  "DailyForecasts": [
-    //    {
-    //      "Date": "2021-11-04T07:00:00+03:00",
-    //      "EpochDate": 1635998400,
-    //      "Temperature": {
-    //        "Minimum": {
-    //          "Value": 5,
-    //          "Unit": "C",
-    //          "UnitType": 17
-    //        },
-    //        "Maximum": {
-    //          "Value": 8.5,
-    //          "Unit": "C",
-    //          "UnitType": 17
-    //        }
-    //      },
-    //      "Day": {
-    //        "Icon": 12,
-    //        "IconPhrase": "Ливни",
-    //        "HasPrecipitation": true,
-    //        "PrecipitationType": "Rain",
-    //        "PrecipitationIntensity": "Light"
-    //      },
-    //      "Night": {
-    //        "Icon": 40,
-    //        "IconPhrase": "Преимущественно облачно с ливнями",
-    //        "HasPrecipitation": true,
-    //        "PrecipitationType": "Rain",
-    //        "PrecipitationIntensity": "Light"
-    //      },
-    //      "Sources": [
-    //        "AccuWeather"
-    //      ],
-    //      "MobileLink": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?day=1&unit=c",
-    //      "Link": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?day=1&unit=c"
-    //    }
-    //  ]
-    //}
 
+    @Override
+    public List<Weather> getSavedToDBWeather() {
+        return dataBaseRepository.getSavedToDBWeather();
+    }
 
-    //Responce от акку прогноз на 5 дней
-    //{
-    //  "Headline": {
-    //    "EffectiveDate": "2021-11-10T01:00:00+03:00",
-    //    "EffectiveEpochDate": 1636495200,
-    //    "Severity": 2,
-    //    "Text": "Вторник, поздняя ночь - Среда, утро: снег и изморозь с общим уровнем 1–3 см",
-    //    "Category": "snow/ice",
-    //    "EndDate": "2021-11-10T13:00:00+03:00",
-    //    "EndEpochDate": 1636538400,
-    //    "MobileLink": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?unit=c",
-    //    "Link": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?unit=c"
-    //  },
-    //  "DailyForecasts": [
-    //    {
-    //      "Date": "2021-11-05T07:00:00+03:00",
-    //      "EpochDate": 1636084800,
-    //      "Temperature": {
-    //        "Minimum": {
-    //          "Value": 3.8,
-    //          "Unit": "C",
-    //          "UnitType": 17
-    //        },
-    //        "Maximum": {
-    //          "Value": 9.3,
-    //          "Unit": "C",
-    //          "UnitType": 17
-    //        }
-    //      },
-    //      "Day": {
-    //        "Icon": 18,
-    //        "IconPhrase": "Дождь",
-    //        "HasPrecipitation": true,
-    //        "PrecipitationType": "Rain",
-    //        "PrecipitationIntensity": "Light"
-    //      },
-    //      "Night": {
-    //        "Icon": 18,
-    //        "IconPhrase": "Дождь",
-    //        "HasPrecipitation": true,
-    //        "PrecipitationType": "Rain",
-    //        "PrecipitationIntensity": "Light"
-    //      },
-    //      "Sources": [
-    //        "AccuWeather"
-    //      ],
-    //      "MobileLink": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?day=1&unit=c",
-    //      "Link": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?day=1&unit=c"
-    //    },
-    //    {
-    //      "Date": "2021-11-06T07:00:00+03:00",
-    //      "EpochDate": 1636171200,
-    //      "Temperature": {
-    //        "Minimum": {
-    //          "Value": 0.9,
-    //          "Unit": "C",
-    //          "UnitType": 17
-    //        },
-    //        "Maximum": {
-    //          "Value": 5.3,
-    //          "Unit": "C",
-    //          "UnitType": 17
-    //        }
-    //      },
-    //      "Day": {
-    //        "Icon": 12,
-    //        "IconPhrase": "Ливни",
-    //        "HasPrecipitation": true,
-    //        "PrecipitationType": "Rain",
-    //        "PrecipitationIntensity": "Moderate"
-    //      },
-    //      "Night": {
-    //        "Icon": 12,
-    //        "IconPhrase": "Ливни",
-    //        "HasPrecipitation": true,
-    //        "PrecipitationType": "Rain",
-    //        "PrecipitationIntensity": "Light"
-    //      },
-    //      "Sources": [
-    //        "AccuWeather"
-    //      ],
-    //      "MobileLink": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?day=2&unit=c",
-    //      "Link": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?day=2&unit=c"
-    //    },
-    //    {
-    //      "Date": "2021-11-07T07:00:00+03:00",
-    //      "EpochDate": 1636257600,
-    //      "Temperature": {
-    //        "Minimum": {
-    //          "Value": 1.3,
-    //          "Unit": "C",
-    //          "UnitType": 17
-    //        },
-    //        "Maximum": {
-    //          "Value": 4.4,
-    //          "Unit": "C",
-    //          "UnitType": 17
-    //        }
-    //      },
-    //      "Day": {
-    //        "Icon": 6,
-    //        "IconPhrase": "Преимущественно облачно",
-    //        "HasPrecipitation": false
-    //      },
-    //      "Night": {
-    //        "Icon": 29,
-    //        "IconPhrase": "Снег с дождем",
-    //        "HasPrecipitation": true,
-    //        "PrecipitationType": "Mixed",
-    //        "PrecipitationIntensity": "Light"
-    //      },
-    //      "Sources": [
-    //        "AccuWeather"
-    //      ],
-    //      "MobileLink": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?day=3&unit=c",
-    //      "Link": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?day=3&unit=c"
-    //    },
-    //    {
-    //      "Date": "2021-11-08T07:00:00+03:00",
-    //      "EpochDate": 1636344000,
-    //      "Temperature": {
-    //        "Minimum": {
-    //          "Value": -3.2,
-    //          "Unit": "C",
-    //          "UnitType": 17
-    //        },
-    //        "Maximum": {
-    //          "Value": 3.3,
-    //          "Unit": "C",
-    //          "UnitType": 17
-    //        }
-    //      },
-    //      "Day": {
-    //        "Icon": 29,
-    //        "IconPhrase": "Снег с дождем",
-    //        "HasPrecipitation": true,
-    //        "PrecipitationType": "Mixed",
-    //        "PrecipitationIntensity": "Light"
-    //      },
-    //      "Night": {
-    //        "Icon": 38,
-    //        "IconPhrase": "Преимущественно облачно",
-    //        "HasPrecipitation": true,
-    //        "PrecipitationType": "Rain",
-    //        "PrecipitationIntensity": "Light"
-    //      },
-    //      "Sources": [
-    //        "AccuWeather"
-    //      ],
-    //      "MobileLink": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?day=4&unit=c",
-    //      "Link": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?day=4&unit=c"
-    //    },
-    //    {
-    //      "Date": "2021-11-09T07:00:00+03:00",
-    //      "EpochDate": 1636430400,
-    //      "Temperature": {
-    //        "Minimum": {
-    //          "Value": -3.4,
-    //          "Unit": "C",
-    //          "UnitType": 17
-    //        },
-    //        "Maximum": {
-    //          "Value": -1.1,
-    //          "Unit": "C",
-    //          "UnitType": 17
-    //        }
-    //      },
-    //      "Day": {
-    //        "Icon": 4,
-    //        "IconPhrase": "Переменная облачность",
-    //        "HasPrecipitation": false
-    //      },
-    //      "Night": {
-    //        "Icon": 19,
-    //        "IconPhrase": "Небольшой снег",
-    //        "HasPrecipitation": true,
-    //        "PrecipitationType": "Snow",
-    //        "PrecipitationIntensity": "Light"
-    //      },
-    //      "Sources": [
-    //        "AccuWeather"
-    //      ],
-    //      "MobileLink": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?day=5&unit=c",
-    //      "Link": "http://www.accuweather.com/ru/ru/saint-petersburg/295212/daily-weather-forecast/295212?day=5&unit=c"
-    //    }
-    //  ]
-    //}
-
-    //Responce от акку прогноз на 10 дней
-    //
-
-
-    //Responce от акку прогноз на 15 дней
-    //
 }

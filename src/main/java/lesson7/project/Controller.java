@@ -1,12 +1,13 @@
 package lesson7.project;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Controller {
-    private WeatherModel weatherModel = new AccuweatherModel();
-    private Map<Integer, Period> variants = new HashMap<>();
+    private static final WeatherModel weatherModel = new AccuweatherModel();
+    private static final Map<Integer, Period> variants = new HashMap<>();
 
     public Controller() {
         variants.put(1, Period.NOW);
@@ -17,7 +18,7 @@ public class Controller {
     }
     public static String cityName;
 
-    public void getWeather(String userInput, String selectedCity) throws IOException {
+    public void getWeather(String userInput, String selectedCity) throws IOException, SQLException {
         Integer userIntegerInput = Integer.parseInt(userInput);
 
         switch (variants.get(userIntegerInput)) {

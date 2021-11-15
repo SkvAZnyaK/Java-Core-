@@ -17,7 +17,7 @@
       <scope value="GLOBAL" />
       <destination value="FILE" />
       <format value="EXCEL" />
-      <charset value="UTF-8" />
+      <charset value="windows-1251" />
     </export-instructions>
   </component>
   <component name="DBNavigator.Project.DatabaseBrowserManager">
@@ -32,54 +32,60 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="c18fba22-bf73-4cc3-99fd-f667a69d8ac9">
-      <console name="Connection" type="STANDARD" schema="main" session="Main"><![CDATA[create table students (id integer primary key autoincrement, name text, score integer);
-create table course (id integer primary key autoincrement, name text);
+      <console name="Connection" type="STANDARD" schema="main" session="Main"><![CDATA[create table weather (id integer primary key autoincrement, city text, dayWeatherText text, nightWeatherText text, localDate text, minTemperature real, maxTemperature real, temperatureUnit text);
+insert into weather (city, dayWeatherText, nightWeatherText, localDate, minTemperature, maxTemperature, temperatureUnit) values ('Penza', 'jngjng', 'fcsfcs', '23/11/3233', 10, 15, 'C')
+select * from weather where city = 'Penza'
 
-insert into students (name, score) values ('Андрей', 10);
-insert into students (name, score) values ('ОЛег', 9);
-insert into students (name, score) values ('Антон', 4);
-insert into students (name, score) values ('Елена', 12);
 
-select * from students;
 
-update students set score = 5 where name = 'Андрей'
+--create table students (id integer primary key autoincrement, name text, score integer);
+--create table course (id integer primary key autoincrement, name text);
 
-delete from students where id = 4
+--insert into students (name, score) values ('Андрей', 10);
+--insert into students (name, score) values ('ОЛег', 9);
+--insert into students (name, score) values ('Антон', 4);
+--insert into students (name, score) values ('Елена', 12);
 
-drop table students
-drop table course
+--select * from students;
+
+--update students set score = 5 where name = 'Андрей'
+
+--delete from students where id = 4
+
+--drop table students
+--drop table course
 
 --задача - студенты и факультеты. Сделайте выборку из стундентов и факультетов, на которых они учатся
 
-create table students (id integer primary key autoincrement, name text, score integer, fac_id integer);
-create table faculties (id integer primary key autoincrement, name text)
+--create table students (id integer primary key autoincrement, name text, score integer, fac_id integer);
+--create table faculties (id integer primary key autoincrement, name text)
 
-insert into students (name, score, fac_id) values ('Олег', 10, 1);
-insert into students (name, score, fac_id) values ('Антон', 9, 2)
-insert into students (name, score, fac_id) values ('Ксения', 11, 3);
-insert into students (name, score, fac_id) values ('Дмитрий', 12, 6);
+--insert into students (name, score, fac_id) values ('Олег', 10, 1);
+--insert into students (name, score, fac_id) values ('Антон', 9, 2)
+--insert into students (name, score, fac_id) values ('Ксения', 11, 3);
+--insert into students (name, score, fac_id) values ('Дмитрий', 12, 6);
 
-insert into faculties (name) values ('IT');
-insert into faculties (name) values ('Math');
-insert into faculties (name) values ('Culture');
-insert into faculties (name) values ('Biology');
+--insert into faculties (name) values ('IT');
+--insert into faculties (name) values ('Math');
+--insert into faculties (name) values ('Culture');
+--insert into faculties (name) values ('Biology');
 
-select * from faculties;
+--select * from faculties;
 
-select * from students;
+--select * from students;
 
-delete from faculties where id = 5;
+--delete from faculties where id = 5;
 
-update faculties set name = 'Тест' where id = 1
+--update faculties set name = 'Тест' where id = 1
 
 
-select s.name as "student name", f.name as "fac name" from students s join faculties f on s.fac_id = f.id;
-select * from students s left join faculties f on s.fac_id = f.id;
+--select s.name as "student name", f.name as "fac name" from students s join faculties f on s.fac_id = f.id;
+--select * from students s left join faculties f on s.fac_id = f.id;
 
-1.1234124
-create table weather (id integer primary key autoincrement, city text, localdate text, temperature real)
-insert into weather (city, localdate, temperature) values ('Тест', '12.12', 12)
-select * from weather]]></console>
+--1.1234124
+--create table weather (id integer primary key autoincrement, city text, localdate text, temperature real)
+--insert into weather (city, localdate, temperature) values ('Тест', '12.12', 12)
+--select * from weather]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
@@ -120,7 +126,7 @@ select * from weather]]></console>
           <description value="" />
           <database-type value="SQLITE" />
           <config-type value="BASIC" />
-          <database-version value="3.21" />
+          <database-version value="3.34" />
           <driver-source value="BUILTIN" />
           <driver-library value="" />
           <driver value="" />
@@ -332,6 +338,7 @@ select * from weather]]></console>
           <content-type name="JSON" enabled="true" />
           <content-type name="JSON5" enabled="true" />
           <content-type name="Groovy" enabled="true" />
+          <content-type name="AIDL" enabled="true" />
           <content-type name="YAML" enabled="true" />
           <content-type name="Manifest" enabled="true" />
         </content-types>
